@@ -1,0 +1,8 @@
+*.egg-info
+.cache
+.coverage
+.tox
+__pycache__
+.sagemaker-code-config
+.DS_Store
+.ipynb_checkpoints
