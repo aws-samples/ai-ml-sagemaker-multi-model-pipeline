@@ -1,6 +1,7 @@
 *.egg-info
 .cache
-.coverage
+.coverage*
+.pydocstyle*
 .tox
 __pycache__
 .sagemaker-code-config
