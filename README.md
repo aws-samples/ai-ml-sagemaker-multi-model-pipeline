@@ -5,7 +5,7 @@ This project has two (2) components: (1) `container` - custom Docker image with 
 ## Start here
 
 In this example, we are solving real estate value regression prediction problem using the
-dataset obtained from the StatLib repository (http://lib.stat.cmu.edu/datasets/) that was derived from the 1990 U.S. census, using one row per census block group. The dataset is imported to an Athena table from S3 and the pipeline imports the data from this table. Data Wrangler transforms the data (i.e. one-hot encoding, etc) as the initial step in the pipeline. The pipeline then proceeds with preprocessing, training using Decision Tree and XGBoost algorithms with hyperparameter tuning, evaluation, and registration of the winning model to the registry. Every trial is recorded in SageMaker Experiments. This pipeline is a modified version of the pipeline provided by [MLOps template for model building, training, and deployment](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-templates-sm.html#sagemaker-projects-templates-code-commit).
+dataset obtained from the [StatLib repository](http://lib.stat.cmu.edu/datasets/) that was derived from the 1990 U.S. census, using one row per census block group. The dataset is imported to an Athena table from S3 and the pipeline imports the data from this table. Data Wrangler transforms the data (i.e. one-hot encoding, etc) as the initial step in the pipeline. The pipeline then proceeds with preprocessing, training using Decision Tree and XGBoost algorithms with hyperparameter tuning, evaluation, and registration of the winning model to the registry. Every trial is recorded in SageMaker Experiments. This pipeline is a modified version of the pipeline provided by [MLOps template for model building, training, and deployment](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-templates-sm.html#sagemaker-projects-templates-code-commit).
 
 Prior to running the pipeline, you have to push the Decision Tree custom container to your own Amazon Elastic Container Registry (ECR). This container is a modified version of [Scikit BYO](https://github.com/aws/amazon-sagemaker-examples/tree/main/advanced_functionality/scikit_bring_your_own/container).
 
@@ -32,7 +32,7 @@ The dataset contains the following features:
 
 ## Assumptions and Prerequisites
 
-- S3 bucket sagemaker-restate-<AWS ACCOUNT ID> is created and raw data has been uploaded to s3://sagemaker-restate-<AWS ACCOUNT ID>/raw/california/.
+- S3 bucket `sagemaker-restate-<AWS ACCOUNT ID>` is created and raw data has been uploaded to `s3://sagemaker-restate-<AWS ACCOUNT ID>/raw/california/`.
 - SageMaker project is already created.
 - Necessary IAM service roles are already created.
 
@@ -45,11 +45,12 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 - Use S3 VPC endpoint policy which controls access to specified Amazon S3 buckets only
 
 The following IAM roles are required:
-* AmazonSageMakerServiceCatalogProductsUseRole-restate with the following managed policies:
+
+1 - AmazonSageMakerServiceCatalogProductsUseRole-restate with the following managed policies:
 - AmazonAthenaFullAccess
 - AmazonSageMakerFullAccess
 
-* AWSGlueServiceRole-restate with the following managed policies:
+2 - AWSGlueServiceRole-restate with the following managed policies:
 - AmazonS3FullAccess
 - AWSGlueServiceRole
 
