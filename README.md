@@ -45,6 +45,7 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 - Use S3 VPC endpoint policy which controls access to specified Amazon S3 buckets only
 
 The following IAM roles are required:
+
 1 - AmazonSageMakerServiceCatalogProductsUseRole-restate with the following managed policies:
 - AmazonAthenaFullAccess
 - AmazonSageMakerFullAccess
