@@ -23,7 +23,7 @@ extras = {
         "pytest",
         "pytest-cov",
         "sagemaker",
-        "tox"
+        "tox",
     ]
 }
 setuptools.setup(

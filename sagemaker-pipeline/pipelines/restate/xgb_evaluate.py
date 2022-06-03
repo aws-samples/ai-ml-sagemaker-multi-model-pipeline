@@ -30,7 +30,14 @@ logger.addHandler(logging.StreamHandler())
 
 # May need to import additional metrics depending on what you are measuring.
 # See https://docs.aws.amazon.com/sagemaker/latest/dg/model-monitor-model-quality-metrics.html
-from sklearn.metrics import accuracy_score, classification_report, roc_auc_score, mean_squared_error, mean_absolute_error, r2_score
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    roc_auc_score,
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+)
 
 if __name__ == "__main__":
 
@@ -38,19 +45,14 @@ if __name__ == "__main__":
     with tarfile.open(model_path) as tar:
         tar.extractall(path="..")
 
-
     logger.debug("Loading XGB model.")
     model = pickle.load(open("xgboost-model", "rb"))
 
-
     test_path = "/opt/ml/processing/test/test.csv"
-
 
     logger.info("Loading test input data")
 
-
     df = pd.read_csv(test_path, header=None)
-
 
     logger.debug("Reading test data.")
     y_test = df.iloc[:, 0].to_numpy()
@@ -58,19 +60,13 @@ if __name__ == "__main__":
     df.drop(df.columns[0], axis=1, inplace=True)
     X_test = xgboost.DMatrix(df.values)
 
-
-
     logger.info("Performing predictions against test data.")
     predictions = model.predict(X_test)
 
-
     logger.info("Creating classification evaluation report")
-
-
 
     mse = mean_squared_error(y_test, predictions)
     r2s = r2_score(y_test, predictions)
-
 
     report_dict = {
         "regression_metrics": {

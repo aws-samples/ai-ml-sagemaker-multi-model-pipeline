@@ -38,7 +38,11 @@ from sagemaker.workflow.steps import ProcessingStep, TrainingStep, CacheConfig, 
 
 ###
 from sagemaker.processing import ProcessingInput, ProcessingOutput
-from sagemaker.dataset_definition.inputs import AthenaDatasetDefinition, DatasetDefinition, RedshiftDatasetDefinition
+from sagemaker.dataset_definition.inputs import (
+    AthenaDatasetDefinition,
+    DatasetDefinition,
+    RedshiftDatasetDefinition,
+)
 
 
 import time
@@ -60,7 +64,14 @@ from smexperiments.trial_component import TrialComponent
 from smexperiments.tracker import Tracker
 from sagemaker.workflow.pipeline_experiment_config import PipelineExperimentConfig
 
-from sagemaker.tuner import ContinuousParameter, IntegerParameter, CategoricalParameter, HyperparameterTuner, WarmStartConfig, WarmStartTypes
+from sagemaker.tuner import (
+    ContinuousParameter,
+    IntegerParameter,
+    CategoricalParameter,
+    HyperparameterTuner,
+    WarmStartConfig,
+    WarmStartTypes,
+)
 
 
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -123,30 +134,32 @@ def get_pipeline(
     input_data = ParameterString(
         name="InputDataUrl",
         default_value=f"",  # Change this to point to the s3 location of your raw input data.
-        #default_value=f"s3://sagemaker-project-p-3xbrq5pwzvlw/export-flow-02-23-52-23-354f2c00/output/pipelines-4y3vbujineuo-DataWranglerProcessi-A5QsWJSsSJ/05ba8da3-2ced-4ecb-aad9-22704674d567/default/part-00000-76487ef2-610f-413c-a489-9158b771ef51-c000TEMP.csv",
-        #default_value=None
+        # default_value=f"s3://sagemaker-project-p-3xbrq5pwzvlw/export-flow-02-23-52-23-354f2c00/output/pipelines-4y3vbujineuo-DataWranglerProcessi-A5QsWJSsSJ/05ba8da3-2ced-4ecb-aad9-22704674d567/default/part-00000-76487ef2-610f-413c-a489-9158b771ef51-c000TEMP.csv",
+        # default_value=None
     )
 
-### ATHENA PIPELINE BEGIN
+    ### ATHENA PIPELINE BEGIN
     data_sources = []
 
-    data_sources.append(ProcessingInput(
-        input_name="restate-california",
-        dataset_definition=DatasetDefinition(
-            local_path="/opt/ml/processing/restate-california",
-            data_distribution_type="FullyReplicated",
-            # You can override below to point to other database or use different queries
-            athena_dataset_definition=AthenaDatasetDefinition(
-                catalog="AwsDataCatalog",
-                database="restate",
-                #query_string="SELECT * FROM resvm.russia_3870",
-                query_string="SELECT * FROM restate.california_10",
-                output_s3_uri="s3://sagemaker-restate-240964962523/athena/data-wrangler",
-                output_format="PARQUET"
-            )
+    data_sources.append(
+        ProcessingInput(
+            input_name="restate-california",
+            dataset_definition=DatasetDefinition(
+                local_path="/opt/ml/processing/restate-california",
+                data_distribution_type="FullyReplicated",
+                # You can override below to point to other database or use different queries
+                athena_dataset_definition=AthenaDatasetDefinition(
+                    catalog="AwsDataCatalog",
+                    database="restate",
+                    # query_string="SELECT * FROM resvm.russia_3870",
+                    query_string="SELECT * FROM restate.california_10",
+                    output_s3_uri="s3://sagemaker-restate-240964962523/athena/data-wrangler",
+                    output_format="PARQUET",
+                ),
+            ),
         )
-    ))
-    
+    )
+
     # Sagemaker session
     sess = sagemaker_session
 
@@ -160,7 +173,7 @@ def get_pipeline(
     flow_export_name = f"flow-{flow_export_id}"
 
     # Output name is auto-generated from the select node's ID + output name from the flow file.
-    #output_name = "dc0bda28-f867-4501-9323-b3d571ae5c35.default"
+    # output_name = "dc0bda28-f867-4501-9323-b3d571ae5c35.default"
     output_name = "99ae1ec3-dd5f-453c-bfae-721dac423cd7.default"
 
     s3_output_prefix = f"export-{flow_export_name}/output"
@@ -171,14 +184,13 @@ def get_pipeline(
         output_name=output_name,
         source="/opt/ml/processing/output",
         destination=s3_output_path,
-        s3_upload_mode="EndOfJob"
+        s3_upload_mode="EndOfJob",
     )
-
 
     # name of the flow file which should exist in the current notebook working directory
     flow_file_name = "sagemaker-pipeline/restate-athena-california.flow"
 
-    # Load .flow file from current notebook working directory 
+    # Load .flow file from current notebook working directory
     #!echo "Loading flow file from current notebook working directory: $PWD"
 
     with open(flow_file_name) as f:
@@ -186,12 +198,17 @@ def get_pipeline(
 
     # Upload flow to S3
     s3_client = boto3.client("s3")
-    s3_client.upload_file(flow_file_name, bucket, f"data_wrangler_flows/{flow_export_name}.flow", ExtraArgs={"ServerSideEncryption": "aws:kms"})
+    s3_client.upload_file(
+        flow_file_name,
+        bucket,
+        f"data_wrangler_flows/{flow_export_name}.flow",
+        ExtraArgs={"ServerSideEncryption": "aws:kms"},
+    )
 
     flow_s3_uri = f"s3://{bucket}/data_wrangler_flows/{flow_export_name}.flow"
 
     print(f"Data Wrangler flow {flow_file_name} uploaded to {flow_s3_uri}")
-    
+
     ## Input - Flow: restate-athena-russia.flow
     flow_input = ProcessingInput(
         source=flow_s3_uri,
@@ -199,9 +216,9 @@ def get_pipeline(
         input_name="flow",
         s3_data_type="S3Prefix",
         s3_input_mode="File",
-        s3_data_distribution_type="FullyReplicated"
+        s3_data_distribution_type="FullyReplicated",
     )
-    
+
     # IAM role for executing the processing job.
     iam_role = role
 
@@ -213,9 +230,9 @@ def get_pipeline(
         framework="data-wrangler",  # we are using the Sagemaker built in xgboost algorithm
         region=region,
     )
-    #container_uri = "119527597002.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-data-wrangler-container:1.x"
-    # Pinned Data Wrangler Container URL. 
-    #container_uri_pinned = "119527597002.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-data-wrangler-container:1.14.3"
+    # container_uri = "119527597002.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-data-wrangler-container:1.x"
+    # Pinned Data Wrangler Container URL.
+    # container_uri_pinned = "119527597002.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-data-wrangler-container:1.14.3"
 
     # Processing Job Instance count and instance type.
     instance_count = 2
@@ -233,16 +250,12 @@ def get_pipeline(
     # List of tags to be passed to the processing job
     user_tags = []
 
-    # Output configuration used as processing job container arguments 
-    output_config = {
-        output_name: {
-            "content_type": output_content_type
-        }
-    }
+    # Output configuration used as processing job container arguments
+    output_config = {output_name: {"content_type": output_content_type}}
 
     # KMS key for per object encryption; default is None
     kms_key = None
-    
+
     processor = Processor(
         role=iam_role,
         image_uri=container_uri,
@@ -252,19 +265,18 @@ def get_pipeline(
         network_config=NetworkConfig(enable_network_isolation=enable_network_isolation),
         sagemaker_session=sess,
         output_kms_key=kms_key,
-        tags=user_tags
+        tags=user_tags,
     )
 
     data_wrangler_step = ProcessingStep(
         name="DataWranglerProcess",
         processor=processor,
-        inputs=[flow_input] + data_sources, 
+        inputs=[flow_input] + data_sources,
         outputs=[processing_job_output],
         job_arguments=[f"--output-config '{json.dumps(output_config)}'"],
     )
 
-### ATHENA PIPELINE END
-
+    ### ATHENA PIPELINE END
 
     # Processing step for feature engineering
     # this processor does not have awswrangler installed
@@ -285,7 +297,7 @@ def get_pipeline(
                 source=data_wrangler_step.properties.ProcessingOutputConfig.Outputs[
                     output_name
                 ].S3Output.S3Uri,
-                destination="/opt/ml/processing/data/raw-data-dir"
+                destination="/opt/ml/processing/data/raw-data-dir",
             )
         ],
         outputs=[
@@ -294,14 +306,19 @@ def get_pipeline(
             ProcessingOutput(output_name="test", source="/opt/ml/processing/test"),
         ],
         code=os.path.join(BASE_DIR, "preprocess.py"),
-        job_arguments=["--input-data", data_wrangler_step.properties.ProcessingOutputConfig.Outputs[output_name].S3Output.S3Uri],
+        job_arguments=[
+            "--input-data",
+            data_wrangler_step.properties.ProcessingOutputConfig.Outputs[
+                output_name
+            ].S3Output.S3Uri,
+        ],
     )
 
     # Training step for generating model artifacts
     model_path = f"s3://{sagemaker_session.default_bucket()}/{base_job_prefix}/restateTrain"
     model_bucket_key = f"{sagemaker_session.default_bucket()}/{base_job_prefix}/restateTrain"
     cache_config = CacheConfig(enable_caching=True, expire_after="30d")
-   
+
     xgb_image_uri = sagemaker.image_uris.retrieve(
         framework="xgboost",  # we are using the Sagemaker built in xgboost algorithm
         region=region,
@@ -319,25 +336,22 @@ def get_pipeline(
         role=role,
     )
     xgb_train.set_hyperparameters(
-    #    #objective="binary:logistic",
-    #    objective="reg:linear",
+        #    #objective="binary:logistic",
+        #    objective="reg:linear",
         num_round=50,
-    #    max_depth=5,
-    #    eta=0.2,
-    #    gamma=4,
-    #    min_child_weight=6,
-    #    subsample=0.7,
-    #    silent=0,
+        #    max_depth=5,
+        #    eta=0.2,
+        #    gamma=4,
+        #    min_child_weight=6,
+        #    subsample=0.7,
+        #    silent=0,
     )
-    
-    xgb_train.set_hyperparameters(
-        grow_policy="lossguide"
-    )
-   
+
+    xgb_train.set_hyperparameters(grow_policy="lossguide")
 
     xgb_objective_metric_name = "validation:mse"
     xgb_hyperparameter_ranges = {
-        "max_depth": IntegerParameter(2,10, scaling_type="Linear"),
+        "max_depth": IntegerParameter(2, 10, scaling_type="Linear"),
     }
 
     xgb_tuner_log = HyperparameterTuner(
@@ -350,13 +364,14 @@ def get_pipeline(
         objective_type="Minimize",
     )
 
-    
     xgb_step_tuning = TuningStep(
         name="XGBHPTune",
         tuner=xgb_tuner_log,
         inputs={
             "train": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "train"
+                ].S3Output.S3Uri,
                 content_type="text/csv",
             ),
             "validation": TrainingInput(
@@ -369,10 +384,11 @@ def get_pipeline(
         cache_config=cache_config,
     )
 
+    # dtree_image_uri = '625467769535.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-decision-tree:latest'
+    dtree_image_uri = sagemaker_session.sagemaker_client.describe_image_version(
+        ImageName="restate-dtree"
+    )["ContainerImage"]
 
-    #dtree_image_uri = '625467769535.dkr.ecr.ap-southeast-1.amazonaws.com/sagemaker-decision-tree:latest'
-    dtree_image_uri = sagemaker_session.sagemaker_client.describe_image_version(ImageName="restate-dtree")['ContainerImage']
-   
     dtree_train = Estimator(
         image_uri=dtree_image_uri,
         role=role,
@@ -381,14 +397,14 @@ def get_pipeline(
         base_job_name=f"{base_job_prefix}/restate-dtree-train",
         output_path=model_path,
         sagemaker_session=sagemaker_session,
-    )    
-    
+    )
+
     dtree_objective_metric_name = "validation:mse"
-    dtree_metric_definitions = [{'Name': 'validation:mse', 'Regex': 'mse:(\S+)'}]
+    dtree_metric_definitions = [{"Name": "validation:mse", "Regex": "mse:(\S+)"}]
 
     dtree_hyperparameter_ranges = {
-        "max_depth": IntegerParameter(10,50, scaling_type="Linear"),
-        "max_leaf_nodes": IntegerParameter(2,12, scaling_type="Linear"),
+        "max_depth": IntegerParameter(10, 50, scaling_type="Linear"),
+        "max_leaf_nodes": IntegerParameter(2, 12, scaling_type="Linear"),
     }
 
     dtree_tuner_log = HyperparameterTuner(
@@ -402,13 +418,14 @@ def get_pipeline(
         objective_type="Minimize",
     )
 
-    
     dtree_step_tuning = TuningStep(
         name="DTreeHPTune",
         tuner=dtree_tuner_log,
         inputs={
             "training": TrainingInput(
-                s3_data=step_process.properties.ProcessingOutputConfig.Outputs["train"].S3Output.S3Uri,
+                s3_data=step_process.properties.ProcessingOutputConfig.Outputs[
+                    "train"
+                ].S3Output.S3Uri,
                 content_type="text/csv",
             ),
             "validation": TrainingInput(
@@ -421,7 +438,6 @@ def get_pipeline(
         cache_config=cache_config,
     )
 
-
     dtree_script_eval = ScriptProcessor(
         image_uri=dtree_image_uri,
         command=["python3"],
@@ -431,7 +447,7 @@ def get_pipeline(
         sagemaker_session=sagemaker_session,
         role=role,
     )
-    
+
     dtree_evaluation_report = PropertyFile(
         name="EvaluationReportDTree",
         output_name="dtree_evaluation",
@@ -443,7 +459,7 @@ def get_pipeline(
         processor=dtree_script_eval,
         inputs=[
             ProcessingInput(
-                #source=dtree_step_train.properties.ModelArtifacts.S3ModelArtifacts,
+                # source=dtree_step_train.properties.ModelArtifacts.S3ModelArtifacts,
                 source=dtree_step_tuning.get_top_model_s3_uri(top_k=0, s3_bucket=model_bucket_key),
                 destination="/opt/ml/processing/model",
             ),
@@ -455,14 +471,13 @@ def get_pipeline(
             ),
         ],
         outputs=[
-            ProcessingOutput(output_name="dtree_evaluation", source="/opt/ml/processing/evaluation"),
+            ProcessingOutput(
+                output_name="dtree_evaluation", source="/opt/ml/processing/evaluation"
+            ),
         ],
         code=os.path.join(BASE_DIR, "dtree_evaluate.py"),
         property_files=[dtree_evaluation_report],
     )
-
-
-    
 
     xgb_script_eval = ScriptProcessor(
         image_uri=xgb_image_uri,
@@ -473,7 +488,7 @@ def get_pipeline(
         sagemaker_session=sagemaker_session,
         role=role,
     )
-    
+
     xgb_evaluation_report = PropertyFile(
         name="EvaluationReportXGBoost",
         output_name="xgb_evaluation",
@@ -485,7 +500,7 @@ def get_pipeline(
         processor=xgb_script_eval,
         inputs=[
             ProcessingInput(
-                #source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+                # source=step_train.properties.ModelArtifacts.S3ModelArtifacts,
                 source=xgb_step_tuning.get_top_model_s3_uri(top_k=0, s3_bucket=model_bucket_key),
                 destination="/opt/ml/processing/model",
             ),
@@ -503,8 +518,6 @@ def get_pipeline(
         property_files=[xgb_evaluation_report],
     )
 
-
-
     xgb_model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
             s3_uri="{}/xgb_evaluation.json".format(
@@ -517,33 +530,33 @@ def get_pipeline(
     dtree_model_metrics = ModelMetrics(
         model_statistics=MetricsSource(
             s3_uri="{}/dtree_evaluation.json".format(
-                dtree_step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"]["S3Uri"]
+                dtree_step_eval.arguments["ProcessingOutputConfig"]["Outputs"][0]["S3Output"][
+                    "S3Uri"
+                ]
             ),
             content_type="application/json",
         )
     )
 
-
     xgb_eval_metrics = JsonGet(
-                step=xgb_step_eval,
-                property_file=xgb_evaluation_report,
-                #json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
-                json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
-    )
-    
-    dtree_eval_metrics = JsonGet(
-                step=dtree_step_eval,
-                property_file=dtree_evaluation_report,
-                #json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
-                json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+        step=xgb_step_eval,
+        property_file=xgb_evaluation_report,
+        # json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+        json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
     )
 
-    
+    dtree_eval_metrics = JsonGet(
+        step=dtree_step_eval,
+        property_file=dtree_evaluation_report,
+        # json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+        json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+    )
+
     # Register model step that will be conditionally executed
     dtree_step_register = RegisterModel(
         name="DTreeReg",
         estimator=dtree_train,
-        #model_data=dtree_step_train.properties.ModelArtifacts.S3ModelArtifacts,
+        # model_data=dtree_step_train.properties.ModelArtifacts.S3ModelArtifacts,
         model_data=dtree_step_tuning.get_top_model_s3_uri(top_k=0, s3_bucket=model_bucket_key),
         content_types=["text/csv"],
         response_types=["text/csv"],
@@ -558,7 +571,7 @@ def get_pipeline(
     xgb_step_register = RegisterModel(
         name="XGBReg",
         estimator=xgb_train,
-        #model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
+        # model_data=step_train.properties.ModelArtifacts.S3ModelArtifacts,
         model_data=xgb_step_tuning.get_top_model_s3_uri(top_k=0, s3_bucket=model_bucket_key),
         content_types=["text/csv"],
         response_types=["text/csv"],
@@ -569,24 +582,22 @@ def get_pipeline(
         model_metrics=xgb_model_metrics,
     )
 
-    
     # Condition step for evaluating model quality and branching execution
     cond_lte = ConditionGreaterThanOrEqualTo(  # You can change the condition here
         left=JsonGet(
             step=dtree_step_eval,
             property_file=dtree_evaluation_report,
-            #json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+            # json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
             json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
         ),
         right=JsonGet(
             step=xgb_step_eval,
             property_file=xgb_evaluation_report,
-            #json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
+            # json_path="binary_classification_metrics.accuracy.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
             json_path="regression_metrics.r2s.value",  # This should follow the structure of your report_dict defined in the evaluate.py file.
         ),  # You can change the threshold here
     )
-    
-    
+
     step_cond = ConditionStep(
         name="AccuracyCond",
         conditions=[cond_lte],
@@ -594,7 +605,7 @@ def get_pipeline(
         else_steps=[xgb_step_register],
     )
     create_date = time.strftime("%Y-%m-%d-%H-%M-%S")
-                                        
+
     # Pipeline instance
     pipeline = Pipeline(
         name=pipeline_name,
@@ -604,10 +615,20 @@ def get_pipeline(
             training_instance_type,
             model_approval_status,
             input_data
-           # input_data_wr
+            # input_data_wr
         ],
-        pipeline_experiment_config=PipelineExperimentConfig(pipeline_name + "-" + create_date, "restate-{}".format(create_date)),
-        steps=[data_wrangler_step, step_process, dtree_step_tuning, xgb_step_tuning, dtree_step_eval, xgb_step_eval, step_cond],        
+        pipeline_experiment_config=PipelineExperimentConfig(
+            pipeline_name + "-" + create_date, "restate-{}".format(create_date)
+        ),
+        steps=[
+            data_wrangler_step,
+            step_process,
+            dtree_step_tuning,
+            xgb_step_tuning,
+            dtree_step_eval,
+            xgb_step_eval,
+            step_cond,
+        ],
         sagemaker_session=sagemaker_session,
     )
     return pipeline

@@ -42,18 +42,16 @@ if __name__ == "__main__":
     bucket = input_data.split("/")[2]
     s3_output_prefix = "/".join(input_data.split("/")[3:])
 
-
-    s3_resource = boto3.resource('s3')
+    s3_resource = boto3.resource("s3")
     temp_s3_bucket = s3_resource.Bucket(bucket)
     prefix_objs = temp_s3_bucket.objects.filter(Prefix=s3_output_prefix)
     for obj in prefix_objs:
         key = obj.key
         logger.info("Downloading data from bucket: %s, key: %s", bucket, key)
         s3fn = key.split("/")
-        s3fn = s3fn[len(s3fn)-1]
+        s3fn = s3fn[len(s3fn) - 1]
         fn = f"{base_dir}/data/{s3fn}"
         s3_resource.Bucket(bucket).download_file(key, fn)
-
 
     logger.info("Reading downloaded data")
     all_files = glob.iglob(os.path.join(f"{base_dir}/data", "*.csv"))
@@ -62,13 +60,11 @@ if __name__ == "__main__":
 
     logger.info(model_data.info())
 
-
     # Split the data
     train_data, validation_data, test_data = np.split(
         model_data.sample(frac=1, random_state=1729),
         [int(0.7 * len(model_data)), int(0.9 * len(model_data))],
     )
-
 
     test_data = test_data[train_data.columns]
     validation_data = validation_data[train_data.columns]
