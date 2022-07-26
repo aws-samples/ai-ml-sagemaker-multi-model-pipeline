@@ -1,0 +1,544 @@
+{
+  "metadata": {
+    "version": 1,
+    "disable_limits": false,
+    "instance_type": "ml.m5.4xlarge"
+  },
+  "nodes": [
+    {
+      "node_id": "0b3a3943-97b0-49e3-9894-830443f522ca",
+      "type": "SOURCE",
+      "operator": "sagemaker.s3_source_0.1",
+      "parameters": {
+        "dataset_definition": {
+          "__typename": "S3CreateDatasetDefinitionOutput",
+          "datasetSourceType": "S3",
+          "name": "diabetic_data.csv",
+          "description": null,
+          "s3ExecutionContext": {
+            "__typename": "S3ExecutionContext",
+            "s3Uri": "s3://sagemaker-diabetes-013718728843/diabetic_data.csv",
+            "s3ContentType": "csv",
+            "s3HasHeader": true,
+            "s3FieldDelimiter": ",",
+            "s3DirIncludesNested": false,
+            "s3AddsFilenameColumn": false
+          }
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "b3d30123-1423-4472-a251-b9ff24d9d381",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.infer_and_cast_type_0.1",
+      "parameters": {},
+      "trained_parameters": {
+        "schema": {
+          "encounter_id": "long",
+          "patient_nbr": "long",
+          "race": "string",
+          "gender": "string",
+          "age": "string",
+          "weight": "string",
+          "admission_type_id": "long",
+          "discharge_disposition_id": "long",
+          "admission_source_id": "long",
+          "time_in_hospital": "long",
+          "payer_code": "string",
+          "medical_specialty": "string",
+          "num_lab_procedures": "long",
+          "num_procedures": "long",
+          "num_medications": "long",
+          "number_outpatient": "long",
+          "number_emergency": "long",
+          "number_inpatient": "long",
+          "diag_1": "long",
+          "diag_2": "long",
+          "diag_3": "long",
+          "number_diagnoses": "long",
+          "max_glu_serum": "string",
+          "A1Cresult": "string",
+          "metformin": "string",
+          "repaglinide": "string",
+          "nateglinide": "string",
+          "chlorpropamide": "string",
+          "glimepiride": "string",
+          "acetohexamide": "string",
+          "glipizide": "string",
+          "glyburide": "string",
+          "tolbutamide": "string",
+          "pioglitazone": "string",
+          "rosiglitazone": "string",
+          "acarbose": "string",
+          "miglitol": "string",
+          "troglitazone": "string",
+          "tolazamide": "string",
+          "examide": "string",
+          "citoglipton": "string",
+          "insulin": "string",
+          "glyburide-metformin": "string",
+          "glipizide-metformin": "string",
+          "glimepiride-pioglitazone": "string",
+          "metformin-rosiglitazone": "string",
+          "metformin-pioglitazone": "string",
+          "change": "string",
+          "diabetesMed": "string",
+          "readmitted": "string"
+        }
+      },
+      "inputs": [
+        {
+          "name": "default",
+          "node_id": "0b3a3943-97b0-49e3-9894-830443f522ca",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "a0fcc4ad-932f-4c61-b04f-85165ec49f54",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_columns_0.1",
+      "parameters": {
+        "operator": "Move column",
+        "move_column_parameters": {
+          "move_type": "Move to start",
+          "move_to_start_parameters": {
+            "column_to_move": "readmitted"
+          }
+        },
+        "drop_column_parameters": {}
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "b3d30123-1423-4472-a251-b9ff24d9d381",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "9c491942-6270-410a-8734-dafaa3bee672",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "float",
+          "udf_mode": "Pandas",
+          "input_col": "readmitted",
+          "output_col": "readmitted",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  #series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1) else ('circulatory' if int(x) in range(390, 460) or int(x) == 785) else ('test'))\n  series = series.apply(lambda x : 0.0 if (str(x) == 'NO') else (1.0))                                   \n  return series\n               "
+        },
+        "pyspark_parameters": {},
+        "name": "readmitted"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "a0fcc4ad-932f-4c61-b04f-85165ec49f54",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "e589c34a-c6ec-4d8c-9549-87550098951a",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_columns_0.1",
+      "parameters": {
+        "operator": "Drop column",
+        "drop_column_parameters": {
+          "column_to_drop": [
+            "payer_code",
+            "encounter_id",
+            "patient_nbr",
+            "weight",
+            "medical_specialty",
+            "acarbose",
+            "metformin-pioglitazone",
+            "acetohexamide",
+            "metformin-rosiglitazone",
+            "glimepiride",
+            "glimepiride-pioglitazone",
+            "glipizide",
+            "glyburide-metformin",
+            "examide",
+            "troglitazone",
+            "miglitol",
+            "citoglipton",
+            "glipizide-metformin",
+            "chlorpropamide",
+            "tolbutamide",
+            "glyburide",
+            "tolazamide",
+            "nateglinide"
+          ]
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "9c491942-6270-410a-8734-dafaa3bee672",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "4ea28cf4-b062-494c-a49f-6bb840d9128b",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.handle_missing_0.1",
+      "parameters": {
+        "operator": "Fill missing",
+        "fill_missing_parameters": {
+          "input_column": [
+            "diag_1",
+            "diag_2",
+            "diag_3"
+          ],
+          "fill_value": "0"
+        },
+        "impute_parameters": {
+          "column_type": "Numeric",
+          "numeric_parameters": {
+            "strategy": "Approximate Median"
+          }
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "e589c34a-c6ec-4d8c-9549-87550098951a",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "13fa0709-b2a5-4e92-9f72-eb247015018d",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.search_and_edit_0.1",
+      "parameters": {
+        "operator": "Find and replace substring",
+        "find_and_replace_substring_parameters": {
+          "input_column": [
+            "race"
+          ],
+          "pattern": "\\?",
+          "replacement": "Unknown"
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "4ea28cf4-b062-494c-a49f-6bb840d9128b",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "e440e602-6db8-478d-a99f-82cba34c3cf3",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "diag_1",
+          "output_col": "diag_1",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  #series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1) else ('circulatory' if int(x) in range(390, 460) or int(x) == 785) else ('test'))\n  series = series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1 or int(x) == 0 )  \n                                        else ('circulatory' if int(x) in range(390, 460) or int(x) == 785\n                                        else     ('respiratory' if int(float(x)) in range(460, 520) or int(float(x)) == 786\n                                        else     ('digestive'   if int(float(x)) in range(520, 580) or int(float(x)) == 787\n                                        else     ('diabetes'    if int(float(x)) == 250\n                                        else     ('injury'      if int(float(x)) in range(800, 1000)\n                                        else ('musculoskeletal' if int(float(x)) in range(710, 740)\n                                        else ('genitourinary'   if int(float(x)) in range(580, 630) or int(float(x)) == 788\n                                        else ('neoplasms'       if int(float(x)) in range(140, 240)\n                                        else ('pregnecy'        if int(float(x)) in range(630, 680)\n                                        else 'other'))))))))))\n  return series\n               \n  \"\"\" The following function is applied over batches of the input. The Series that it outputs must be the same length as the input Series.\n\n  Example:\n\n    def lowercase(series: pd.Series) -> pd.Series:\n      return series.str.lower()\n  \"\"\""
+        },
+        "pyspark_parameters": {},
+        "name": "diag-1"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "13fa0709-b2a5-4e92-9f72-eb247015018d",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "6b5b607a-03b9-4133-8ac8-12b2540e28ab",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "diag_2",
+          "output_col": "diag_2",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  #series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1) else ('circulatory' if int(x) in range(390, 460) or int(x) == 785) else ('test'))\n  series = series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1 or int(x) == 0 )  \n                                        else ('circulatory' if int(x) in range(390, 460) or int(x) == 785\n                                        else     ('respiratory' if int(float(x)) in range(460, 520) or int(float(x)) == 786\n                                        else     ('digestive'   if int(float(x)) in range(520, 580) or int(float(x)) == 787\n                                        else     ('diabetes'    if int(float(x)) == 250\n                                        else     ('injury'      if int(float(x)) in range(800, 1000)\n                                        else ('musculoskeletal' if int(float(x)) in range(710, 740)\n                                        else ('genitourinary'   if int(float(x)) in range(580, 630) or int(float(x)) == 788\n                                        else ('neoplasms'       if int(float(x)) in range(140, 240)\n                                        else ('pregnecy'        if int(float(x)) in range(630, 680)\n                                        else 'other'))))))))))\n  return series\n"
+        },
+        "pyspark_parameters": {},
+        "name": "diag-2"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "e440e602-6db8-478d-a99f-82cba34c3cf3",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "5e825fe5-8545-4746-b27a-ea05971880cd",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "diag_3",
+          "output_col": "diag_3",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  #series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1) else ('circulatory' if int(x) in range(390, 460) or int(x) == 785) else ('test'))\n  series = series.apply(lambda x : 'other' if (str(x).find('V') != -1 or str(x).find('E') != -1 or int(x) == 0 )  \n                                        else ('circulatory' if int(x) in range(390, 460) or int(x) == 785\n                                        else     ('respiratory' if int(float(x)) in range(460, 520) or int(float(x)) == 786\n                                        else     ('digestive'   if int(float(x)) in range(520, 580) or int(float(x)) == 787\n                                        else     ('diabetes'    if int(float(x)) == 250\n                                        else     ('injury'      if int(float(x)) in range(800, 1000)\n                                        else ('musculoskeletal' if int(float(x)) in range(710, 740)\n                                        else ('genitourinary'   if int(float(x)) in range(580, 630) or int(float(x)) == 788\n                                        else ('neoplasms'       if int(float(x)) in range(140, 240)\n                                        else ('pregnecy'        if int(float(x)) in range(630, 680)\n                                        else 'other'))))))))))\n  return series\n"
+        },
+        "pyspark_parameters": {},
+        "name": "diag-3"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "6b5b607a-03b9-4133-8ac8-12b2540e28ab",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "c413d501-02e3-4817-b10a-0ac6faf7d41a",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "admission_type_id",
+          "output_col": "admission_type_id",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  series = series.apply(lambda x : 'Unknown' if (int(x) in [5,6,8] ) else ('Emergency' if int(x) == 1 else ('Urgent' if int(x) == 2 else ('Elective' if int(x) == 3 else     ('Newborn' if int(x) == 4 else ('TraumaCenter'))))))\n  return series\n"
+        },
+        "pyspark_parameters": {},
+        "name": "admission-type-id"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "5e825fe5-8545-4746-b27a-ea05971880cd",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "5c7bf83d-6a99-4b0e-b3e2-a6a0d3d30f05",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "discharge_disposition_id",
+          "output_col": "discharge_disposition_id",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  series = series.apply(lambda x : 'Discharged' if (int(x) in [1,2,3,4,5,6,8,10,15,16,17,22,23,24,27,28,29,30]) else ('LeftAMA' if int(x) == 7 else ('InPatient' if int(x) == 9 else ('OutPatient' if int(x) == 12 else ('Expired' if int(x) in [11,19,20,21] else ('Hospice' if int(x) in [13,14] else ('Unknown')))))))\n\n  return series"
+        },
+        "pyspark_parameters": {},
+        "name": "discharge-disposition-id"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "c413d501-02e3-4817-b10a-0ac6faf7d41a",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "b6d7bd2b-611c-4969-80e5-a2c9dfea4d78",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.custom_code_0.1",
+      "parameters": {
+        "operator": "Python (User-Defined Function)",
+        "udf_parameters": {
+          "return_type": "string",
+          "udf_mode": "Pandas",
+          "input_col": "admission_source_id",
+          "output_col": "admission_source_id",
+          "pandas_code": "import pandas as pd\n# Add imports for sklearn, numpy, or any other packages you might need.\n\ndef custom_func(series: pd.Series) -> pd.Series:\n  series = series.apply(lambda x : 'Referral' if (int(x) in [1,2,3]) else ('Transfer' if int(x) in [4,5,6,10,18,19,22,25,26] else ('Emergency' if int(x) == 7 else ('Court' if int(x) == 8 else ('Unknown' if int(x) in [9,15,17,20,21] else ('NormalDelivery' if int(x) == 11 else ('AbnormalDelivery' if int(x) in [12,13,14] else ('BornInside' if int(x) == 23 else ('BornOutside')))))))))\n  return series"
+        },
+        "pyspark_parameters": {},
+        "name": "admission-source-id"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "5c7bf83d-6a99-4b0e-b3e2-a6a0d3d30f05",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "48aab63d-84d2-4eb4-aed7-23210ebc3ab9",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.manage_rows_0.1",
+      "parameters": {
+        "operator": "Drop duplicates",
+        "drop_duplicates_parameters": {},
+        "sort_parameters": {
+          "order": "Ascending"
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "b6d7bd2b-611c-4969-80e5-a2c9dfea4d78",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "b31d277f-ecf4-48bc-bddd-fc19e8b30254",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.balance_data_0.1",
+      "parameters": {
+        "operator": "SMOTE",
+        "ratio": 1,
+        "smote_params": {
+          "num_neighbors": 10
+        },
+        "target_column": "readmitted"
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "48aab63d-84d2-4eb4-aed7-23210ebc3ab9",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    },
+    {
+      "node_id": "d593101e-278b-4330-9779-b6e02fbeb99e",
+      "type": "TRANSFORM",
+      "operator": "sagemaker.spark.encode_categorical_0.1",
+      "parameters": {
+        "operator": "One-hot encode",
+        "one_hot_encode_parameters": {
+          "invalid_handling_strategy": "Keep",
+          "drop_last": false,
+          "output_style": "Columns",
+          "input_column": [
+            "race",
+            "gender",
+            "age",
+            "diag_1",
+            "diag_2",
+            "diag_3",
+            "max_glu_serum",
+            "A1Cresult",
+            "metformin",
+            "repaglinide",
+            "pioglitazone",
+            "rosiglitazone",
+            "insulin",
+            "change",
+            "diabetesMed",
+            "admission_type_id",
+            "discharge_disposition_id",
+            "admission_source_id"
+          ]
+        },
+        "ordinal_encode_parameters": {
+          "invalid_handling_strategy": "Replace with NaN"
+        }
+      },
+      "inputs": [
+        {
+          "name": "df",
+          "node_id": "b31d277f-ecf4-48bc-bddd-fc19e8b30254",
+          "output_name": "default"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "default"
+        }
+      ]
+    }
+  ]
+}

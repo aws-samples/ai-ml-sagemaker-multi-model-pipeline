@@ -63,7 +63,7 @@ if __name__ == "__main__":
     # Split the data
     train_data, validation_data, test_data = np.split(
         model_data.sample(frac=1, random_state=1729),
-        [int(0.7 * len(model_data)), int(0.9 * len(model_data))],
+        [int(0.7 * len(model_data)), int(0.8 * len(model_data))],
     )
 
     test_data = test_data[train_data.columns]

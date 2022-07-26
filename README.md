@@ -1,38 +1,22 @@
-# Multi-model SageMaker Pipeline with Hyperparamater Tuning and Experiments Template
+# Predict diabetic patient hospital re-admission using multi-model SageMaker Pipeline with Hyperparamater Tuning
 
-This project has two (2) components: (1) `container` - custom Docker image with custom Decision Tree  algorithm using scikit-learn with hyperpameter tuning support, and (2) `sagemaker-pipeline` - a SageMaker pipeline that supports two (2) algorithms: XGBoost on SageMaker container and Decision Tree on custom container built from the first component. The pipeline imports the data from an Athena table and is transformed for ML training using SageMaker Data Wrangler. The pipeline also supports SageMaker HyperParameter Tuning and SageMaker Experiments. The best performing model in terms of R2 Score is then registered to the model registry, ready for inference deployment.
+This project has two (2) components: (1) `container` - custom Docker image with custom Decision Tree  algorithm using scikit-learn with hyperpameter tuning support, and (2) `sagemaker-pipeline` - a SageMaker pipeline that supports two (2) algorithms: XGBoost on SageMaker container and Decision Tree on custom container built from the first component. The pipeline imports the data from an S3 bucket for ML training using SageMaker Data Wrangler. The pipeline also supports SageMaker HyperParameter Tuning. The best performing model in terms of RPC is then registered to the model registry, ready for inference deployment.
 
 ## Start here
 
-In this example, we are solving real estate value regression prediction problem using the
-dataset obtained from the [StatLib repository](http://lib.stat.cmu.edu/datasets/) that was derived from the 1990 U.S. census, using one row per census block group. The dataset is imported to an Athena table from S3 and the pipeline imports the data from this table. Data Wrangler transforms the data (i.e. one-hot encoding, etc) as the initial step in the pipeline. The pipeline then proceeds with preprocessing, training using Decision Tree and XGBoost algorithms with hyperparameter tuning, evaluation, and registration of the winning model to the registry. Every trial is recorded in SageMaker Experiments. This pipeline is a modified version of the pipeline provided by [MLOps template for model building, training, and deployment](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-templates-sm.html#sagemaker-projects-templates-code-commit).
+In this example, we are solving binary classification problem to determine if a hospital diabetic patient is predicted to be readmitted in the hospital. This example uses [Diabetes 130-US hospitals for years 1999-2008 Data Set](https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008). The dataset is uploaded to an S3 bucket and the pipeline imports the data from this bucket. Data Wrangler transforms the data (i.e. one-hot encoding, etc) as the initial step in the pipeline. The pipeline then proceeds with preprocessing, training using Decision Tree and XGBoost algorithms with hyperparameter tuning, evaluation, and registration of the winning model to the registry. This pipeline is a modified version of the pipeline provided by [Amazon SageMaker Examples multi-model pipeline](https://github.com/aws/amazon-sagemaker-examples/tree/main/sagemaker-pipeline-multi-model).
 
 Prior to running the pipeline, you have to push the Decision Tree custom container to your own Amazon Elastic Container Registry (ECR). This container is a modified version of [Scikit BYO](https://github.com/aws/amazon-sagemaker-examples/tree/main/advanced_functionality/scikit_bring_your_own/container).
 
-You can use the `restate-project.ipynb` notebook to experiment from SageMaker Studio before you are ready to checkin your code.
+You can use the `diabetes-project.ipynb` notebook to experiment from SageMaker Studio before you are ready to checkin your code.
 
-## Dataset
+## DataSet
 
-This dataset was obtained from the [StatLib repository](http://lib.stat.cmu.edu/datasets/) and derived from the 1990 U.S. census, using one row per census block group. A block group is the smallest geographical unit for which the U.S. Census Bureau publishes sample data (a block group typically has a population of 600 to 3,000 people).
-
-The dataset contains the following features:
-
-```    
-    longitude
-    latitude
-    housingMedianAge
-    totalRooms
-    totalBedrooms
-    population
-    households
-    medianIncome (dropped in the pipeline)
-    medianHouseValue (target)
-```
-
+The dataset represents 10 years (1999-2008) of clinical care at 130 US hospitals and integrated delivery networks. It includes over 50 features representing patient and hospital outcomes. Information was extracted from the database for encounters that satisfied the following criteria. More dataset information can be found in [Diabetes 130-US hospitals for years 1999-2008 Data Set](https://archive.ics.uci.edu/ml/datasets/diabetes+130-us+hospitals+for+years+1999-2008).
 
 ## Assumptions and Prerequisites
 
-- S3 bucket `sagemaker-restate-<AWS ACCOUNT ID>` is created and raw data has been uploaded to `s3://sagemaker-restate-<AWS ACCOUNT ID>/raw/california/`.
+- S3 bucket `sagemaker-diabetes-<AWS ACCOUNT ID>` is created and raw data has been uploaded to `s3://sagemaker-diabetes-<AWS ACCOUNT ID>/`.
 - SageMaker project is already created. Recommendation is to create a SageMaker project using [SageMaker-provide MLOps template for model building, training, and deployment template](https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-projects-templates-sm.html#sagemaker-projects-templates-code-commit).
 - Necessary IAM service roles are already created.
 
@@ -44,20 +28,13 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 - Use interface / gateway VPC endpoints to prevent communication traffic from traversing public network
 - Use S3 VPC endpoint policy which controls access to specified Amazon S3 buckets only
 
-The following IAM roles are required:
-
-1 - AmazonSageMakerServiceCatalogProductsUseRole-restate with the following managed policies:
-- AmazonAthenaFullAccess
+AmazonSageMakerServiceCatalogProductsUseRole-diabetes with the following managed policies:
 - AmazonSageMakerFullAccess
 
-2 - AWSGlueServiceRole-restate with the following managed policies:
-- AmazonS3FullAccess
-- AWSGlueServiceRole
 
-[restate-project.ipynb](https://github.com/aws-samples/ai-ml-sagemaker-multi-model-pipeline/blob/main/restate-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following managed policies:
+[diabetes-project.ipynb](diabates-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following managed policies:
 - AmazonEC2ContainerRegistryFullAccess
 - AmazonS3FullAccess
-- AWSGlueServiceNotebookRole
 - CloudWatchLogsFullAccess
 - AWSCodeCommitReadOnly	AWS managed	- this is needed assuming you code is pulled from CodeCommit
 - AmazonSageMakerFullAccess
@@ -78,8 +55,6 @@ This SageMaker notebook is attached with an IAM role with the following in-line 
     ]
 }
 ```
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
 ## License
 
