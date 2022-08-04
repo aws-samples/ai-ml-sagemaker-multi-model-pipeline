@@ -48,7 +48,8 @@ This SageMaker notebook is attached with an IAM role with the following in-line 
             "Effect": "Allow",
             "Action": [
                 "iam:CreateRole",
-                "iam:AttachRolePolicy"
+                "iam:AttachRolePolicy",
+                "iam:CreatePolicy"
             ],
             "Resource": "*"
         }
