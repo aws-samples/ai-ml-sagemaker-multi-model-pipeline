@@ -1,0 +1,16 @@
+{
+    "AppImageConfigName": "diabetes-dtree-config",
+    "KernelGatewayImageConfig": {
+        "KernelSpecs": [
+            {
+                "Name": "python3",
+                "DisplayName": "Python 3 (ipykernel)"
+            }
+        ],
+        "FileSystemConfig": {
+            "MountPath": "/home/sagemaker-user",
+            "DefaultUid": 1000,
+            "DefaultGid": 100
+        }
+    }
+}

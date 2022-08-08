@@ -25,7 +25,7 @@ logger.addHandler(logging.StreamHandler())
 
 prefix = '/opt/ml/'
 
-input_path = prefix + 'input/data'
+input_path = os.path.join(prefix, 'input/data')
 output_path = os.path.join(prefix, 'output')
 model_path = os.path.join(prefix, 'model')
 param_path = os.path.join(prefix, 'input/config/hyperparameters.json')
@@ -72,9 +72,12 @@ def train():
         clf = tree.DecisionTreeClassifier(max_leaf_nodes=max_leaf_nodes, max_depth=max_depth)
         clf = clf.fit(train_X, train_y)
 
+
         # save the model
+        os.system('sudo chown -R 1000:100 ' + model_path)
         with open(os.path.join(model_path, 'decision-tree-model.pkl'), 'wb') as out:
             pickle.dump(clf, out)
+            
         print('Training complete.')
 
         return clf
@@ -82,8 +85,10 @@ def train():
         # Write out an error file. This will be returned as the failureReason in the
         # DescribeTrainingJob result.
         trc = traceback.format_exc()
+        os.system('sudo chown -R 1000:100 ' + output_path)
         with open(os.path.join(output_path, 'failure'), 'w') as s:
             s.write('Exception during training: ' + str(e) + '\n' + trc)
+
         # Printing this causes the exception to be in the training job logs, as well.
         print('Exception during training: ' + str(e) + '\n' + trc, file=sys.stderr)
         # A non-zero exit code causes the training job to be marked as Failed.
@@ -116,6 +121,7 @@ def validation(clf):
         # Write out an error file. This will be returned as the failureReason in the
         # DescribeTrainingJob result.
         trc = traceback.format_exc()
+        os.system('sudo chown -R 1000:100 ' + output_path)
         with open(os.path.join(output_path, 'failure'), 'w') as s:
             s.write('Exception during training: ' + str(e) + '\n' + trc)
         # Printing this causes the exception to be in the training job logs, as well.

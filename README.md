@@ -32,14 +32,7 @@ AmazonSageMakerServiceCatalogProductsUseRole-diabetes with the following managed
 - AmazonSageMakerFullAccess
 
 
-[diabetes-project.ipynb](diabates-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following managed policies:
-- AmazonEC2ContainerRegistryFullAccess
-- AmazonS3FullAccess
-- CloudWatchLogsFullAccess
-- AWSCodeCommitReadOnly	AWS managed	- this is needed assuming you code is pulled from CodeCommit
-- AmazonSageMakerFullAccess
-
-This SageMaker notebook is attached with an IAM role with the following in-line policy:
+[diabetes-project.ipynb](diabates-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following in-line policy:
 ```
 {
     "Version": "2012-10-17",
@@ -49,9 +42,125 @@ This SageMaker notebook is attached with an IAM role with the following in-line 
             "Action": [
                 "iam:CreateRole",
                 "iam:AttachRolePolicy",
-                "iam:CreatePolicy"
+                "iam:CreatePolicy",
+                "iam:PassRole"
             ],
             "Resource": "*"
+        },
+        {
+            "Action": [
+                "cloudwatch:PutMetricData"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "codecommit:*"
+            ],
+            "Resource": "arn:aws:codecommit:*:*:sagemaker-*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "codepipeline:StartPipelineExecution"
+            ],
+            "Resource": "arn:aws:codepipeline:*:*:sagemaker-*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "codebuild:StartBuild"
+            ],
+            "Resource": "arn:aws:codebuild:*:*:sagemaker-*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:Describe*",
+                "ecr:GetAuthorizationToken",
+                "ecr:GetDownloadUrlForLayer"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:BatchDeleteImage",
+                "ecr:CompleteLayerUpload",
+                "ecr:CreateRepository",
+                "ecr:DeleteRepository",
+                "ecr:InitiateLayerUpload",
+                "ecr:PutImage",
+                "ecr:UploadLayerPart"
+            ],
+            "Resource": [
+                "arn:aws:ecr:*:*:repository/*"
+            ]
+        },
+        {
+            "Action": [
+                "logs:CreateLogDelivery",
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:DeleteLogDelivery",
+                "logs:Describe*",
+                "logs:GetLogDelivery",
+                "logs:GetLogEvents",
+                "logs:ListLogDeliveries",
+                "logs:PutLogEvents",
+                "logs:PutResourcePolicy",
+                "logs:UpdateLogDelivery"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:CreateBucket",
+                "s3:DeleteBucket",
+                "s3:GetBucketAcl",
+                "s3:GetBucketCors",
+                "s3:GetBucketLocation",
+                "s3:ListAllMyBuckets",
+                "s3:ListBucket",
+                "s3:ListBucketMultipartUploads",
+                "s3:PutBucketCors",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sagemaker-*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:AbortMultipartUpload",
+                "s3:DeleteObject",
+                "s3:GetObject",
+                "s3:GetObjectVersion",
+                "s3:PutObject",
+                "s3:PutEncryptionConfiguration"
+            ],
+            "Resource": [
+                "arn:aws:s3:::sagemaker-*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sagemaker:*"
+            ],
+            "NotResource": [
+                "arn:aws:sagemaker:*:*:domain/*",
+                "arn:aws:sagemaker:*:*:user-profile/*",
+                "arn:aws:sagemaker:*:*:app/*",
+                "arn:aws:sagemaker:*:*:flow-definition/*"
+            ]
         }
     ]
 }

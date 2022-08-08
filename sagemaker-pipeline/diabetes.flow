@@ -17,7 +17,7 @@
           "description": null,
           "s3ExecutionContext": {
             "__typename": "S3ExecutionContext",
-            "s3Uri": "s3://sagemaker-diabetes-013718728843/diabetic_data.csv",
+            "s3Uri": "s3://sagemaker-diabetes-AWS_ACCOUNT/diabetic_data.csv",
             "s3ContentType": "csv",
             "s3HasHeader": true,
             "s3FieldDelimiter": ",",

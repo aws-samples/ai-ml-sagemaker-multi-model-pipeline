@@ -38,9 +38,11 @@ from sklearn.metrics import (
 
 if __name__ == "__main__":
 
-    tar_model_path = "/opt/ml/processing/model/model.tar.gz"
-    model_path = "/opt/ml/processing/model/decision-tree-model.pkl"
-
+    prefix = "/opt/ml/processing/"
+    tar_model_path = os.path.join(prefix, 'model/model.tar.gz')
+    model_path = os.path.join(prefix, 'model/decision-tree-model.pkl')
+    
+    os.system('sudo chown -R 1000:100 ' + prefix)
     with tarfile.open(tar_model_path) as tar:
         tar.extractall(path="/opt/ml/processing/model/")
 

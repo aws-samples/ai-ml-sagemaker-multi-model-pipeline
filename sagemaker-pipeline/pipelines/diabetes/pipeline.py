@@ -370,7 +370,7 @@ def get_pipeline(
 
     dtree_hyperparameter_ranges = {
         "max_depth": IntegerParameter(5, 10, scaling_type="Linear"),
-        "max_leaf_nodes": IntegerParameter(0, 10, scaling_type="Linear"),
+        "max_leaf_nodes": IntegerParameter(2, 10, scaling_type="Linear"),
     }
 
     dtree_tuner_log = HyperparameterTuner(
