@@ -28,8 +28,7 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 - Use interface / gateway VPC endpoints to prevent communication traffic from traversing public network
 - Use S3 VPC endpoint policy which controls access to specified Amazon S3 buckets only
 
-AmazonSageMakerServiceCatalogProductsUseRole-diabetes with the following managed policies:
-- AmazonSageMakerFullAccess
+AmazonSageMakerServiceCatalogProductsUseRole-diabetes with AmazonSageMakerFullAccess. [This is required as we are creating a custom SageMaker image](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-byoi-create.html).
 
 
 [diabetes-project.ipynb](diabates-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following in-line policy:
