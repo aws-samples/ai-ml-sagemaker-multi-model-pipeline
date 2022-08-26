@@ -1,4 +1,4 @@
-# Predict diabetic patient hospital re-admission using multi-model SageMaker Pipeline with Hyperparamater Tuning
+# Predict diabetic patient readmission using multi-model training on SageMaker Pipelines
 
 This project has two (2) components: (1) `container` - custom Docker image with custom Decision Tree  algorithm using scikit-learn with hyperpameter tuning support, and (2) `sagemaker-pipeline` - a SageMaker pipeline that supports two (2) algorithms: XGBoost on SageMaker container and Decision Tree on custom container built from the first component. The pipeline imports the data from an S3 bucket for ML training using SageMaker Data Wrangler. The pipeline also supports SageMaker HyperParameter Tuning. The best performing model in terms of RPC is then registered to the model registry, ready for inference deployment.
 
@@ -31,7 +31,7 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 AmazonSageMakerServiceCatalogProductsUseRole-diabetes with AmazonSageMakerFullAccess. [This is required as we are creating a custom SageMaker image](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-byoi-create.html).
 
 
-[diabetes-project.ipynb](diabates-project.ipynb) has been tested in a SageMaker notebook that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following in-line policy:
+[diabetes-project.ipynb](diabetes-project.ipynb) has been tested in a SageMaker notebook instance that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an IAM role with the following in-line policy:
 ```
 {
     "Version": "2012-10-17",
