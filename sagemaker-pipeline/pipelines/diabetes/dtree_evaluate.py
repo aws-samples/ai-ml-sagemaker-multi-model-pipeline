@@ -70,7 +70,7 @@ if __name__ == "__main__":
     roc = roc_auc_score(y_test, predictions)
 
     report_dict = {
-        "regression_metrics": {
+        "classification_metrics": {
             "acc": {"value": acc},
             "roc": {"value": roc},
         },

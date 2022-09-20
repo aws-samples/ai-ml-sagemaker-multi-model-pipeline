@@ -1,6 +1,6 @@
 # Predict diabetic patient readmission using multi-model training on SageMaker Pipelines
 
-This project has two (2) components: (1) `container` - custom Docker image with custom Decision Tree  algorithm using scikit-learn with hyperpameter tuning support, and (2) `sagemaker-pipeline` - a SageMaker pipeline that supports two (2) algorithms: XGBoost on SageMaker container and Decision Tree on custom container built from the first component. The pipeline imports the data from an S3 bucket for ML training using SageMaker Data Wrangler. The pipeline also supports SageMaker HyperParameter Tuning. The best performing model in terms of RPC is then registered to the model registry, ready for inference deployment.
+This project has two (2) components: (1) `container` - custom Docker image with custom Decision Tree algorithm using scikit-learn with hyperpameter tuning support, and (2) `sagemaker-pipeline` - a SageMaker pipeline that supports two (2) algorithms: XGBoost on SageMaker container and Decision Tree on custom container built from the first component. The pipeline imports the data from an S3 bucket for ML training using SageMaker Data Wrangler. The pipeline also supports SageMaker HyperParameter Tuning. The best performing model in terms of RPC is then registered to the model registry, ready for inference deployment.
 
 ## Start here
 
@@ -8,7 +8,7 @@ In this example, we are solving binary classification problem to determine if a 
 
 Prior to running the pipeline, you have to push the Decision Tree custom container to your own Amazon Elastic Container Registry (ECR). This container is a modified version of [Scikit BYO](https://github.com/aws/amazon-sagemaker-examples/tree/main/advanced_functionality/scikit_bring_your_own/container).
 
-You can use the `diabetes-project.ipynb` notebook to experiment from SageMaker Studio before you are ready to checkin your code.
+You can use the `diabetes-project-with-mlops.ipynb` notebook to experiment from SageMaker Studio before you are ready to checkin your code. Alternatively, you can run the pipeline outside of SageMaker Projects using `diabetes-project.ipynb`.
 
 ## DataSet
 
@@ -31,7 +31,7 @@ This sample code is not designed for production deployment out-of-the-box, so fu
 AmazonSageMakerServiceCatalogProductsUseRole-diabetes with AmazonSageMakerFullAccess. [This is required as we are creating a custom SageMaker image](https://docs.aws.amazon.com/sagemaker/latest/dg/studio-byoi-create.html).
 
 
-[diabetes-project.ipynb](diabetes-project.ipynb) has been tested in a SageMaker notebook instance that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an [IAM role with an in-line policy](diabetes-project-iam.json).
+[diabetes-project-with-mlops.ipynb](diabetes-project-with-mlops.ipynb) and [diabetes-project.ipynb](diabetes-project.ipynb) have been tested in a SageMaker notebook instance that is using a kernel with Python 3.7 installed. This SageMaker notebook is attached with an [IAM role with an in-line policy](diabetes-project-iam.json).
 
 ## License
 
